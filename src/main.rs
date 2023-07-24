@@ -55,9 +55,6 @@ fn main() {
 
     crate::handlers::service::setup_services(&config.service_commands, &config.params, &mut supervisor_conf, &mut image_dockerfile);
 
-    println!("{}", &supervisor_conf);
-    println!("{}", &image_dockerfile);
-
     let srcdir = PathBuf::from(config.volume);
     let volume_abs_path = fs::canonicalize(&srcdir).unwrap();
     fs::create_dir_all(volume_abs_path.join("dist")).unwrap();

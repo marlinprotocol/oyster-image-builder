@@ -21,7 +21,7 @@ fn setup_service(service: &Service, params: &HashMap<String, String>, supervisor
 
     add_env(image_dockerfile, &service.env);
 
-    setup_open_ports(&service.ports, &service_params, supervisor_conf)
+    setup_open_ports(&service.ports, &service_params, supervisor_conf);
 }
 
 fn update_supervisord_conf(supervisor_conf: &mut String, params: &HashMap<String, String>, name: &String, command: &String) {
