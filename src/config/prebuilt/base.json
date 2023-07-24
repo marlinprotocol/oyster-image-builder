@@ -1,0 +1,63 @@
+[
+    {
+        "name": "supervisor",
+        "command": "",
+        "build_commands": [
+            "wget -O supervisord http://public.artifacts.marlin.pro/projects/enclaves/supervisord_master_linux_{arch}",
+            "chmod +x supervisord",
+            "mv /app/assets/supervisord.conf /etc/supervisord.conf"
+        ],
+        "ports": [],
+        "env": {}
+    },
+    {
+        "name": "transparent_proxy",
+        "command": "/app/ip-to-vsock-transparent --vsock-addr 3:1200 --ip-addr 127.0.0.1:1200",
+        "build_commands": [
+            "wget -O ip-to-vsock-transparent http://public.artifacts.marlin.pro/projects/enclaves/ip-to-vsock-transparent_v1.0.0_linux_{arch}",
+            "chmod +x ip-to-vsock-transparent"
+        ],
+        "ports": [ 1200 ],
+        "env": {}
+    },
+    {
+        "name": "tcp_in",
+        "command": "",
+        "build_commands": [
+            "wget -O vsock-to-ip http://public.artifacts.marlin.pro/projects/enclaves/vsock-to-ip_v1.0.0_linux_{arch}",
+            "chmod +x vsock-to-ip"
+        ],
+        "ports": [],
+        "env": {}
+    },
+    {
+        "name": "keygen",
+        "command": "",
+        "build_commands": [
+            "wget -O keygen http://public.artifacts.marlin.pro/projects/enclaves/keygen_v1.0.0_linux_{arch}",
+            "chmod +x keygen"
+        ],
+        "ports": [],
+        "env": {}
+    },
+    {
+        "name": "attestation_server",
+        "command": "/app/attestation-server --ip-addr 127.0.0.1:1300 --pub-key /app/id.pub",
+        "build_commands": [
+            "wget -O attestation-server http://public.artifacts.marlin.pro/projects/enclaves/attestation-server_v1.0.0_linux_{arch}",
+            "chmod +x attestation-server"
+        ],
+        "ports": [ 1300 ],
+        "env": {}
+    },
+    {
+        "name": "dns_proxy",
+        "command": "/app/dnsproxy -u https://1.1.1.1/dns-query -v",
+        "build_commands": [
+            "wget -O dnsproxy http://public.artifacts.marlin.pro/projects/enclaves/dnsproxy_v0.46.5_linux_{arch}",
+            "chmod +x dnsproxy"
+        ],
+        "ports": [],
+        "env": {}
+    }
+]

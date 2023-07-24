@@ -1,0 +1,27 @@
+[
+    {
+        "name": "caddy",
+        "command": "/usr/bin/caddy run --config /etc/caddy/Caddyfile",
+        "build_commands": [
+            "wget -O caddy \"{caddy.url}\"",
+            "mv caddy /usr/bin/caddy",
+            "chmod +x /usr/bin/caddy",
+            "mkdir -p /etc/caddy",
+            "mv /app/mount/{caddy.caddyfile} /etc/caddy/Caddyfile"
+        ],
+        "ports": [ 80, 443 ],
+        "env": {
+            "XDG_DATA_HOME": "/var/lib"
+        }
+    },
+    {
+        "name": "acme_id",
+        "command": "sh -c 'sleep 10 && /app/acme-id'",
+        "build_commands": [
+            "wget -O acme-id htp://localhost/acme-id",
+            "chmod +x acme-id"
+        ],
+        "ports": [ 1500 ],
+        "env": {}
+    }
+]
