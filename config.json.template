@@ -1,0 +1,21 @@
+{
+    "caddy": {
+        "url": "",
+        "caddyfile": ""
+    },
+    "params": {
+        "arch": ""
+    },
+    "service_commands": [
+        {
+            "name": "",
+            "command": "",
+            "build_commands": [
+                ""
+            ],
+            "ports": [],
+            "env": {}
+        },
+        ...
+    ]
+}

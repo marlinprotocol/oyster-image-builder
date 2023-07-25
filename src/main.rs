@@ -31,7 +31,6 @@ pub struct CaddyConfig {
 #[derive(Serialize, Deserialize)]
 struct Config {
     caddy: CaddyConfig, // relative to the volume
-    volume: String, // copied to image during image creation
     service_commands: Vec<Service>,
     // TODO: add validations on what is supported
     params: HashMap<String, String>, // amd64, arm64
@@ -55,7 +54,7 @@ fn main() {
 
     crate::handlers::service::setup_services(&config.service_commands, &config.params, &mut supervisor_conf, &mut image_dockerfile);
 
-    let srcdir = PathBuf::from(config.volume);
+    let srcdir = PathBuf::from("/app/mount");
     let volume_abs_path = fs::canonicalize(&srcdir).unwrap();
     fs::create_dir_all(volume_abs_path.join("dist")).unwrap();
     fs::create_dir_all(volume_abs_path.join("../assets")).unwrap();
