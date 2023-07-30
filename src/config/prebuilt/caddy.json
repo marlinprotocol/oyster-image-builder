@@ -15,11 +15,11 @@
         }
     },
     {
-        "name": "acme_id",
-        "command": "sh -c 'sleep 10 && /app/acme-id'",
+        "name": "caa-binder",
+        "command": "sh -c 'sleep 10 && /app/caa-binder'",
         "build_commands": [
-            "wget -O acme-id htp://localhost/acme-id",
-            "chmod +x acme-id"
+            "wget -O caa-binder http://public.artifacts.marlin.pro/projects/enclaves/caa-binder_v0.1.0_linux_{arch}",
+            "chmod +x caa-binder"
         ],
         "ports": [ 1500 ],
         "env": {}

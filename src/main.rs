@@ -32,8 +32,7 @@ pub struct CaddyConfig {
 struct Config {
     caddy: CaddyConfig, // relative to the volume
     service_commands: Vec<Service>,
-    // TODO: add validations on what is supported
-    params: HashMap<String, String>, // amd64, arm64
+    params: HashMap<String, String>,
 }
 
 pub mod handlers;
@@ -54,6 +53,7 @@ fn main() {
 
     crate::handlers::service::setup_services(&config.service_commands, &config.params, &mut supervisor_conf, &mut image_dockerfile);
 
+    // TODO: move mount path to defaults config
     let srcdir = PathBuf::from("/app/mount");
     let volume_abs_path = fs::canonicalize(&srcdir).unwrap();
     fs::create_dir_all(volume_abs_path.join("dist")).unwrap();
@@ -65,4 +65,6 @@ fn main() {
     if Path::new("/app/mount/dist/enclave.eif").exists() {
         fs::remove_file("/app/mount/dist/enclave.eif").unwrap();
     }
+
+    println!("Enclave-Builder: Service setup complete to build enclave");
 }
