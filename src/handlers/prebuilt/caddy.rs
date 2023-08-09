@@ -9,7 +9,7 @@ pub fn setup_domain(caddy_config: CaddyConfig, params: &HashMap<String, String>,
     if caddy_config.url == "" {
         caddy_params.insert(
             "caddy.url".to_string(), 
-            format!("https://caddyserver.com/api/download?os=linux&arch={arch}", arch=params["arch"])
+            format!("https://caddyserver.com/api/download?os=linux&arch={arch}", arch=params["ARCH"])
         );
     } else {
         caddy_params.insert("caddy.url".to_string(), caddy_config.url.to_string());
