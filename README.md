@@ -10,9 +10,7 @@ Oyster image builder is a tool which can be used to build enclave images where e
         "url": "",
         "caddyfile": ""
     },
-    "params": {
-        "ARCH": ""
-    },
+    "params": {},
     "service_commands": [
         {
             "name": "",
@@ -43,10 +41,6 @@ Caddy is a web server that can serve static websites or act as reverse proxy to 
 
 Params are any global parameters that can be passed while building the image. These can be used to parameterize the `build_commands` and `command` specified in the `service_commands` in the config. Examples of such parametrization can be found in [prebuilt](src/config/prebuilt/) configurations.
 
-#### ARCH
-
-ARCH is a special parameter used to specify the architecture to build the image for. This can be used as parameter while specifying the `service_commands` as done [here](src/config/prebuilt/base.json). Currently `amd64` and `arm64` are supported values for ARCH.
-
 ### Service commands
 
 Service commands section is used to specify how to setup services or setup environments. Supervisor is internally used to setup and run services during the enclave execution.
@@ -70,6 +64,16 @@ Ports are the array of ports to the setup for the service to access. This sets u
 #### env
 
 Env are the list of environmental variables to setup in the enclave. The variables specified here are added to the Dockerfile as ENV variables while building the enclave image.
+
+## Build
+
+Once the config file is built, enclave can be built using the following command
+
+`docker run -it --privileged -e ARCH=amd64 -v `pwd`:/app/mount marlinorg/enclave-builder`
+
+### ARCH
+
+ARCH is a special parameter used to specify the architecture to build the image for. This can be used as parameter while specifying the `service_commands` as done [here](src/config/prebuilt/base.json). Currently `amd64` and `arm64` are supported values for ARCH.
 
 ## Need more help
 
