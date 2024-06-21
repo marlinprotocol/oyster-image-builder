@@ -115,6 +115,7 @@ fn set_default_values(json_config: &mut Value) {
 
     ensure_field_exists(json_obj, "caddy", json!({}));
     ensure_field_exists(json_obj, "params", json!({}));
+    ensure_field_exists(json_obj, "service_commands", json!([]));
 
     if let Some(services) = json_obj
         .get_mut("service_commands")
