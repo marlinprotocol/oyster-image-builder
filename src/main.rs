@@ -28,8 +28,8 @@ pub struct Service {
 
 #[derive(Deserialize)]
 pub struct CaddyConfig {
-    url: String, // use "" for default
-    caddyfile: String,
+    url: Option<String>,
+    caddyfile: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -47,47 +47,7 @@ fn main() {
     let mut json_config: Value =
         serde_json::from_str(&raw_config).expect("Failed to parse raw config");
 
-    // Ensuring caddy field is defined
-    if json_config.get("caddy").is_none() {
-        let default_caddy: Value = json!({
-            "url": "",
-            "caddyfile": ""
-        });
-        json_config
-            .as_object_mut()
-            .unwrap()
-            .insert("caddy".to_string(), default_caddy);
-    }
-
-    // Ensuring params field is defined
-    if json_config.get("params").is_none() {
-        let default_params: Value = json!({});
-        json_config
-            .as_object_mut()
-            .unwrap()
-            .insert("params".to_string(), default_params);
-    }
-
-    // Ensuring ports and env is defined in service_commands
-    if let Some(services) = json_config
-        .get_mut("service_commands")
-        .and_then(|v| v.as_array_mut())
-    {
-        for service in services {
-            if service.get("ports").is_none() {
-                service
-                    .as_object_mut()
-                    .unwrap()
-                    .insert("ports".to_string(), json!([]));
-            }
-            if service.get("env").is_none() {
-                service
-                    .as_object_mut()
-                    .unwrap()
-                    .insert("env".to_string(), json!({}));
-            }
-        }
-    }
+    set_default_values(&mut json_config);
 
     let mut config: Config =
         serde_json::from_value(json_config).expect("Failed to deserialize JSON Config");
@@ -110,7 +70,9 @@ fn main() {
         &mut image_dockerfile,
     );
 
-    if config.caddy.caddyfile != "" {
+    if !config.caddy.caddyfile.is_none()
+        && config.caddy.caddyfile.as_ref().unwrap().to_string() != ""
+    {
         crate::handlers::prebuilt::caddy::setup_domain(
             config.caddy,
             &config.params,
@@ -136,4 +98,32 @@ fn main() {
     fs::write(&assets_path.join("entrypoint.sh"), &entrypoint).unwrap();
 
     println!("Enclave-Builder: Service setup complete to build enclave");
+}
+
+fn set_default_values(json_config: &mut Value) {
+    fn ensure_field_exists(
+        json_obj: &mut serde_json::Map<String, Value>,
+        field: &str,
+        default: Value,
+    ) {
+        if json_obj.get(field).is_none() {
+            json_obj.insert(field.to_string(), default);
+        }
+    }
+
+    let json_obj = json_config.as_object_mut().unwrap();
+
+    ensure_field_exists(json_obj, "caddy", json!({}));
+    ensure_field_exists(json_obj, "params", json!({}));
+
+    if let Some(services) = json_obj
+        .get_mut("service_commands")
+        .and_then(|v| v.as_array_mut())
+    {
+        for service in services {
+            let service_obj = service.as_object_mut().unwrap();
+            ensure_field_exists(service_obj, "ports", json!([]));
+            ensure_field_exists(service_obj, "env", json!({}));
+        }
+    }
 }
