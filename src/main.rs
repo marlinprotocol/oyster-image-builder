@@ -4,6 +4,7 @@ use std::path::PathBuf;
 
 use clap::Parser;
 use serde::Deserialize;
+use serde_json::{json, Value};
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -41,26 +42,89 @@ struct Config {
 pub mod handlers;
 
 fn main() {
-    let args = Args::parse();
+    let args: Args = Args::parse();
     let raw_config = fs::read_to_string(args.config.as_str()).unwrap();
-    let mut config: Config = serde_json::from_str(raw_config.as_str()).unwrap();
+    let mut json_config: Value =
+        serde_json::from_str(&raw_config).expect("Failed to parse raw config");
+
+    // Ensuring caddy field is defined
+    if json_config.get("caddy").is_none() {
+        let default_caddy: Value = json!({
+            "url": "",
+            "caddyfile": ""
+        });
+        json_config
+            .as_object_mut()
+            .unwrap()
+            .insert("caddy".to_string(), default_caddy);
+    }
+
+    // Ensuring params field is defined
+    if json_config.get("params").is_none() {
+        let default_params: Value = json!({});
+        json_config
+            .as_object_mut()
+            .unwrap()
+            .insert("params".to_string(), default_params);
+    }
+
+    // Ensuring ports and env is defined in service_commands
+    if let Some(services) = json_config
+        .get_mut("service_commands")
+        .and_then(|v| v.as_array_mut())
+    {
+        for service in services {
+            if service.get("ports").is_none() {
+                service
+                    .as_object_mut()
+                    .unwrap()
+                    .insert("ports".to_string(), json!([]));
+            }
+            if service.get("env").is_none() {
+                service
+                    .as_object_mut()
+                    .unwrap()
+                    .insert("env".to_string(), json!({}));
+            }
+        }
+    }
+
+    let mut config: Config =
+        serde_json::from_value(json_config).expect("Failed to deserialize JSON Config");
+
     let mut supervisor_conf: String = include_str!("./assets/enclave/supervisord.conf").to_string();
     let mut image_dockerfile: String = include_str!("./assets/enclave/Dockerfile").to_string();
     let entrypoint: String = include_str!("./assets/enclave/entrypoint.sh").to_string();
 
     if !config.params.get("ARCH").is_none() {
-        panic!("Enclave-Builder: ARCH is a reserved parameter and cannot be set in the config file");
+        panic!(
+            "Enclave-Builder: ARCH is a reserved parameter and cannot be set in the config file"
+        );
     } else {
         config.params.insert("ARCH".to_string(), args.arch);
     }
 
-    crate::handlers::prebuilt::base::setup_base(&config.params, &mut supervisor_conf, &mut image_dockerfile);
+    crate::handlers::prebuilt::base::setup_base(
+        &config.params,
+        &mut supervisor_conf,
+        &mut image_dockerfile,
+    );
 
     if config.caddy.caddyfile != "" {
-        crate::handlers::prebuilt::caddy::setup_domain(config.caddy, &config.params, &mut supervisor_conf, &mut image_dockerfile);
+        crate::handlers::prebuilt::caddy::setup_domain(
+            config.caddy,
+            &config.params,
+            &mut supervisor_conf,
+            &mut image_dockerfile,
+        );
     }
 
-    crate::handlers::service::setup_services(&config.service_commands, &config.params, &mut supervisor_conf, &mut image_dockerfile);
+    crate::handlers::service::setup_services(
+        &config.service_commands,
+        &config.params,
+        &mut supervisor_conf,
+        &mut image_dockerfile,
+    );
 
     // TODO: move path to defaults config
     let base_dir: PathBuf = PathBuf::from("/app");
