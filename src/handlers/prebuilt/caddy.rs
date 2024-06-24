@@ -6,7 +6,7 @@ pub fn setup_domain(caddy_config: CaddyConfig, params: &HashMap<String, String>,
     let domain_services: Vec<Service> = serde_json::from_str(include_str!("../../config/prebuilt/caddy.json")).unwrap();
 
     let mut caddy_params = params.clone();
-    if caddy_config.url.is_none() || caddy_config.url.as_ref().unwrap().to_string() == "" {
+    if caddy_config.url.as_deref().map_or(true, |url| url.is_empty()) {
         caddy_params.insert(
             "caddy.url".to_string(), 
             format!("https://caddyserver.com/api/download?os=linux&arch={arch}", arch=params["ARCH"])
