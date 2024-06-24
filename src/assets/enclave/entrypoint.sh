@@ -18,6 +18,8 @@ iptables -L -t nat
 # generate identity key
 /app/keygen --secret /app/id.sec --public /app/id.pub
 
+# user defined commands
+
 # starting supervisord
 cat /etc/supervisord.conf
 /app/supervisord

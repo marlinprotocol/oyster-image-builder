@@ -41,6 +41,7 @@ struct Config {
     caddy: CaddyConfig, // relative to the volume
     service_commands: Vec<Service>,
     params: HashMap<String, String>,
+    entrypoint_commands: Vec<String>,
 }
 
 pub mod handlers;
@@ -53,9 +54,9 @@ fn main() {
 
     let mut supervisor_conf: String = include_str!("./assets/enclave/supervisord.conf").to_string();
     let mut image_dockerfile: String = include_str!("./assets/enclave/Dockerfile").to_string();
-    let entrypoint: String = include_str!("./assets/enclave/entrypoint.sh").to_string();
+    let mut entrypoint: String = include_str!("./assets/enclave/entrypoint.sh").to_string();
 
-    if !config.params.get("ARCH").is_none() {
+    if config.params.contains_key("ARCH") {
         panic!(
             "Enclave-Builder: ARCH is a reserved parameter and cannot be set in the config file"
         );
@@ -88,6 +89,11 @@ fn main() {
         &config.params,
         &mut supervisor_conf,
         &mut image_dockerfile,
+    );
+
+    crate::handlers::prebuilt::entrypoint::update_entrypoint(
+        &mut entrypoint,
+        &config.entrypoint_commands,
     );
 
     // TODO: move path to defaults config
