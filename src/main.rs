@@ -4,7 +4,6 @@ use std::path::PathBuf;
 
 use clap::Parser;
 use serde::Deserialize;
-use serde_json::Value;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -48,11 +47,9 @@ pub mod handlers;
 
 fn main() {
     let args: Args = Args::parse();
-    let raw_config = fs::read_to_string(args.config.as_str()).unwrap();
-    let json_config: Value = serde_json::from_str(&raw_config).expect("Failed to parse raw config");
-
+    let raw_config = fs::read_to_string(args.config.as_str()).expect("Failed to read config file");
     let mut config: Config =
-        serde_json::from_value(json_config).expect("Failed to deserialize JSON Config");
+        serde_json::from_str(&raw_config).expect("Failed to deserialize raw Config");
 
     let mut supervisor_conf: String = include_str!("./assets/enclave/supervisord.conf").to_string();
     let mut image_dockerfile: String = include_str!("./assets/enclave/Dockerfile").to_string();
