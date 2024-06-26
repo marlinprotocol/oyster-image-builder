@@ -25,17 +25,26 @@ pub struct Service {
     env: HashMap<String, String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Default)]
 pub struct CaddyConfig {
     url: String, // use "" for default
     caddyfile: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Default)]
+#[serde(default)]
+pub struct BaseImage {
+    name: String,
+    commands: Vec<String>,
+}
+
+#[derive(Deserialize, Default)]
+#[serde(default)]
 struct Config {
     caddy: CaddyConfig, // relative to the volume
     service_commands: Vec<Service>,
     params: HashMap<String, String>,
+    base_image: BaseImage,
 }
 
 pub mod handlers;
@@ -54,6 +63,9 @@ fn main() {
         config.params.insert("ARCH".to_string(), args.arch);
     }
 
+    if !config.base_image.name.is_empty() {
+        crate::handlers::prebuilt::docker::update_dockerfile(&mut image_dockerfile, &mut config.base_image);
+    }
     crate::handlers::prebuilt::base::setup_base(&config.params, &mut supervisor_conf, &mut image_dockerfile);
 
     if config.caddy.caddyfile != "" {
