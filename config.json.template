@@ -14,7 +14,8 @@
                 ""
             ],
             "ports": [],
-            "env": {}
+            "env": {},
+            "autorestart": false
         },
         ...
     ]

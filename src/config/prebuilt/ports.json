@@ -4,6 +4,7 @@
         "command": "/app/vsock-to-ip --vsock-addr 88:{port} --ip-addr 127.0.0.1:{port}",
         "build_commands": [],
         "env": {},
-        "ports": []
+        "ports": [],
+        "autorestart": true
     }
 ]

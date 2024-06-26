@@ -17,20 +17,20 @@ fn setup_service(service: &Service, params: &HashMap<String, String>, supervisor
     }
     add_build_commands(image_dockerfile, &service_params, &service.build_commands);
 
-    update_supervisord_conf(supervisor_conf, &service_params, &service.name, &service.command);
+    update_supervisord_conf(supervisor_conf, &service_params, &service.name, &service.command, &service.autorestart);
 
     add_env(image_dockerfile, &service.env);
 
     setup_open_ports(&service.ports, &service_params, supervisor_conf);
 }
 
-fn update_supervisord_conf(supervisor_conf: &mut String, params: &HashMap<String, String>, name: &String, command: &String) {
+fn update_supervisord_conf(supervisor_conf: &mut String, params: &HashMap<String, String>, name: &String, command: &String, autorestart: &bool) {
     if command == "" {
         return;
     }
 
     let service_template = replace_params(
-        &format!(include_str!("../assets/templates/service.template"), service_name=name, command=command), 
+        &format!(include_str!("../assets/templates/service.template"), service_name=name, command=command, autorestart=autorestart), 
         params
     );
     supervisor_conf.push_str(service_template.as_str());
