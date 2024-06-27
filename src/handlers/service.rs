@@ -1,11 +1,19 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 use crate::Service;
 
 use super::prebuilt::ports::setup_open_ports;
 
 pub fn setup_services(services: &Vec<Service>, params: &HashMap<String, String>, supervisor_conf: &mut String, image_dockerfile: &mut String) {
+    let mut used_ports = HashSet::new();
+
     for service in services {
+        for port in &service.ports {
+            if !used_ports.insert(port) {
+                panic!("Duplicate port found: {}", port);
+            }
+        }
         setup_service(service, params, supervisor_conf, image_dockerfile);
     }
 }
