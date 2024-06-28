@@ -8,7 +8,8 @@
             "mv /app/assets/supervisord.conf /etc/supervisord.conf"
         ],
         "ports": [],
-        "env": {}
+        "env": {},
+        "autorestart": true
     },
     {
         "name": "transparent_proxy",
@@ -18,7 +19,8 @@
             "chmod +x ip-to-vsock-transparent"
         ],
         "ports": [ 1200 ],
-        "env": {}
+        "env": {},
+        "autorestart": true
     },
     {
         "name": "tcp_in",
@@ -28,7 +30,8 @@
             "chmod +x vsock-to-ip"
         ],
         "ports": [],
-        "env": {}
+        "env": {},
+        "autorestart": true
     },
     {
         "name": "keygen",
@@ -38,7 +41,8 @@
             "chmod +x keygen"
         ],
         "ports": [],
-        "env": {}
+        "env": {},
+        "autorestart": true
     },
     {
         "name": "attestation_server",
@@ -48,7 +52,8 @@
             "chmod +x attestation-server"
         ],
         "ports": [ 1300 ],
-        "env": {}
+        "env": {},
+        "autorestart": true
     },
     {
         "name": "dns_proxy",
@@ -58,6 +63,7 @@
             "chmod +x dnsproxy"
         ],
         "ports": [],
-        "env": {}
+        "env": {},
+        "autorestart": true
     }
 ]

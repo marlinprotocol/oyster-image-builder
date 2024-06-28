@@ -20,9 +20,18 @@ struct Args {
 pub struct Service {
     name: String,
     command: String,
+    #[serde(default)]
     build_commands: Vec<String>, // run during image creation from copied volume
+    #[serde(default)]
     ports: Vec<u32>,
+    #[serde(default)]
     env: HashMap<String, String>,
+    #[serde(default = "default_autorestart")]
+    autorestart: bool,
+}
+
+fn default_autorestart() -> bool {
+    true
 }
 
 #[derive(Deserialize)]

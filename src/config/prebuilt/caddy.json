@@ -12,7 +12,8 @@
         "ports": [ 80, 443 ],
         "env": {
             "XDG_DATA_HOME": "/var/lib"
-        }
+        },
+        "autorestart": true
     },
     {
         "name": "caa-binder",
@@ -22,6 +23,7 @@
             "chmod +x caa-binder"
         ],
         "ports": [ 1500 ],
-        "env": {}
+        "env": {},
+        "autorestart": true
     }
 ]
