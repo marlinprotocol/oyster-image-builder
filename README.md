@@ -19,12 +19,21 @@ Oyster image builder is a tool which can be used to build enclave images where e
                 ""
             ],
             "ports": [],
-            "env": {}
+            "env": {},
+            "autorestart": true
         },
         ...
-    ]
+    ],
+    "entrypoint_commands": [""],
+    "base_image": {
+        "name": "",
+        "commands": [
+            ""
+        ]
+    }
 }
 ```
+**Note:** All configuration fields, such as `caddy`, `params`, `service_commands`, etc., are optional. If these fields are not specified, the image builder will use default values. However, if you define a `service_command`, it must include both a `name` and a `command`.
 
 The configuration to build the enclave image has to be provided in the above format. Oyster image builder provides default options like setting up a caddy server to serve https websites. 
 
@@ -64,6 +73,26 @@ Ports are the array of ports to the setup for the service to access. This sets u
 #### env
 
 Env are the list of environmental variables to setup in the enclave. The variables specified here are added to the Dockerfile as ENV variables while building the enclave image.
+
+#### autorestart
+
+The `autorestart` field is used to control the auto-restart behavior of services managed by Supervisor. It specifies whether the service should be automatically restarted if it stops unexpectedly.
+
+### Entrypoint commands
+
+Entrypoint commands section is used to specify any entrypoint command which will be executed when the container starts. These commands enables devs to run one time tasks before starting the services with supervisord. Entrypoint is important because it runs within the enclave which means it cannot be accessed by external parties, so if any confidential data has to be generated, say private keys this is the place for it.
+
+### Base Image
+
+Base Image is used to specify which base image Docker should use. The base image sets the foundational operating system layer and determines the initial state of the container. For example, a common base image is alpine, a minimal Docker image based on Alpine Linux. The choice of base image can significantly impact the size of your enclave image.
+
+#### name
+
+The `name` field in the `base_image` section specifies the name of the base image that should be used. This can be any valid Docker image name, such as `ubuntu`, `alpine`, etc. It essentially tells the Docker engine which base image to pull and use as the starting point for building the container.
+
+#### command
+
+The `commands` field is an array of commands that will be executed in the context of the base image. These commands are typically used to set up the environment within the base image, such as installing necessary packages, setting environment variables, or configuring the system. These commands are executed during the build process of the Docker image, not at runtime.
 
 ## Build
 
