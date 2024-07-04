@@ -6,14 +6,14 @@ pub fn setup_domain(caddy_config: CaddyConfig, params: &HashMap<String, String>,
     let domain_services: Vec<Service> = serde_json::from_str(include_str!("../../config/prebuilt/caddy.json")).unwrap();
 
     let mut caddy_params = params.clone();
-    if caddy_config.url.as_deref().map_or(true, |url| url.is_empty()) {
+    if caddy_config.url.is_empty() {
         caddy_params.insert(
             "caddy.url".to_string(), 
             format!("https://caddyserver.com/api/download?os=linux&arch={arch}", arch=params["ARCH"])
         );
     } else {
-        caddy_params.insert("caddy.url".to_string(), caddy_config.url.unwrap().to_string());
+        caddy_params.insert("caddy.url".to_string(), caddy_config.url);
     }
-    caddy_params.insert("caddy.caddyfile".to_string(), caddy_config.caddyfile.unwrap().to_string());
+    caddy_params.insert("caddy.caddyfile".to_string(), caddy_config.caddyfile);
     setup_services(&domain_services, &caddy_params, supervisor_conf, image_dockerfile);
 }

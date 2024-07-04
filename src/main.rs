@@ -16,27 +16,25 @@ struct Args {
     arch: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Default)]
+#[serde(deny_unknown_fields, default)]
 pub struct Service {
     name: String,
     command: String,
-    #[serde(default)]
     build_commands: Vec<String>, // run during image creation from copied volume
-    #[serde(default)]
     ports: Vec<u32>,
-    #[serde(default)]
     env: HashMap<String, String>,
 }
 
 #[derive(Deserialize, Default)]
-#[serde(default)]
+#[serde(deny_unknown_fields, default)]
 pub struct CaddyConfig {
-    url: Option<String>,
-    caddyfile: Option<String>,
+    url: String,
+    caddyfile: String,
 }
 
 #[derive(Deserialize, Default)]
-#[serde(default)]
+#[serde(deny_unknown_fields, default)]
 struct Config {
     caddy: CaddyConfig, // relative to the volume
     service_commands: Vec<Service>,
@@ -73,8 +71,7 @@ fn main() {
     if config
         .caddy
         .caddyfile
-        .as_deref()
-        .map_or(false, |s| !s.is_empty())
+        .is_empty()
     {
         crate::handlers::prebuilt::caddy::setup_domain(
             config.caddy,
