@@ -16,7 +16,8 @@ struct Args {
     arch: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Default)]
+#[serde(deny_unknown_fields, default)]
 pub struct Service {
     name: String,
     command: String,
@@ -25,42 +26,72 @@ pub struct Service {
     env: HashMap<String, String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Default)]
+#[serde(deny_unknown_fields, default)]
 pub struct CaddyConfig {
-    url: String, // use "" for default
+    url: String,
     caddyfile: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Default)]
+#[serde(deny_unknown_fields, default)]
 struct Config {
     caddy: CaddyConfig, // relative to the volume
     service_commands: Vec<Service>,
     params: HashMap<String, String>,
+    entrypoint_commands: Vec<String>,
 }
 
 pub mod handlers;
 
 fn main() {
-    let args = Args::parse();
-    let raw_config = fs::read_to_string(args.config.as_str()).unwrap();
-    let mut config: Config = serde_json::from_str(raw_config.as_str()).unwrap();
+    let args: Args = Args::parse();
+    let raw_config = fs::read_to_string(args.config.as_str()).expect("Failed to read config file");
+    let mut config: Config =
+        serde_json::from_str(&raw_config).expect("Failed to deserialize raw Config");
+
     let mut supervisor_conf: String = include_str!("./assets/enclave/supervisord.conf").to_string();
     let mut image_dockerfile: String = include_str!("./assets/enclave/Dockerfile").to_string();
-    let entrypoint: String = include_str!("./assets/enclave/entrypoint.sh").to_string();
+    let mut entrypoint: String = include_str!("./assets/enclave/entrypoint.sh").to_string();
 
-    if !config.params.get("ARCH").is_none() {
-        panic!("Enclave-Builder: ARCH is a reserved parameter and cannot be set in the config file");
+    if config.params.contains_key("ARCH") {
+        panic!(
+            "Enclave-Builder: ARCH is a reserved parameter and cannot be set in the config file"
+        );
     } else {
         config.params.insert("ARCH".to_string(), args.arch);
     }
 
-    crate::handlers::prebuilt::base::setup_base(&config.params, &mut supervisor_conf, &mut image_dockerfile);
+    crate::handlers::prebuilt::base::setup_base(
+        &config.params,
+        &mut supervisor_conf,
+        &mut image_dockerfile,
+    );
 
-    if config.caddy.caddyfile != "" {
-        crate::handlers::prebuilt::caddy::setup_domain(config.caddy, &config.params, &mut supervisor_conf, &mut image_dockerfile);
+    if config
+        .caddy
+        .caddyfile
+        .is_empty()
+    {
+        crate::handlers::prebuilt::caddy::setup_domain(
+            config.caddy,
+            &config.params,
+            &mut supervisor_conf,
+            &mut image_dockerfile,
+        );
     }
 
-    crate::handlers::service::setup_services(&config.service_commands, &config.params, &mut supervisor_conf, &mut image_dockerfile);
+    crate::handlers::service::setup_services(
+        &config.service_commands,
+        &config.params,
+        &mut supervisor_conf,
+        &mut image_dockerfile,
+    );
+
+    crate::handlers::prebuilt::entrypoint::update_entrypoint(
+        &mut entrypoint,
+        &config.entrypoint_commands,
+    );
 
     // TODO: move path to defaults config
     let base_dir: PathBuf = PathBuf::from("/app");
